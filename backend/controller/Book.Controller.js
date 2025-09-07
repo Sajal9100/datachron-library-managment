@@ -42,4 +42,67 @@ const returnBook = asyncHandler(async (req, res) => {
   res.json({ message: "Book returned", book: updated });
 });
 
-module.exports = { addBook, getBooks, borrowBook, returnBook };
+
+// Search books by title or author with optional pagination
+ const searchBooks = async (req, res) => {
+  const { query, page = 1, limit = 10 } = req.query;
+  const skip = (page - 1) * limit;
+
+  const books = await prisma.book.findMany({
+    where: {
+      isAvailable: true,
+      OR: [
+        { title: { contains: query, mode: "insensitive" } },
+        { author: { contains: query, mode: "insensitive" } },
+      ],
+    },
+    skip: parseInt(skip),
+    take: parseInt(limit),
+  });
+
+  const total = await prisma.book.count({
+    where: {
+      isAvailable: true,
+      OR: [
+        { title: { contains: query, mode: "insensitive" } },
+        { author: { contains: query, mode: "insensitive" } },
+      ],
+    },
+  });
+
+  res.json({
+    page: parseInt(page),
+    limit: parseInt(limit),
+    total,
+    books,
+  });
+};
+
+
+// Get borrowing history for logged-in user
+//check not wokring i guess
+ const getUserHistory = async (req, res) => {
+  const userId = req.user.id;
+
+  const history = await prisma.borrow.findMany({
+    where: { userId },
+    include: {
+      book: true, // include book details
+    },
+    orderBy: { borrowedAt: "desc" },
+  });
+
+  const formattedHistory = history.map(record => ({
+    bookTitle: record.book.title,
+    bookAuthor: record.book.author,
+    borrowedAt: record.borrowedAt,
+    returnedAt: record.returnedAt,
+    isReturned: record.returnedAt ? true : false,
+  }));
+
+  res.json(formattedHistory);
+};
+
+
+
+module.exports = { addBook, getBooks, borrowBook, returnBook ,searchBooks, getUserHistory };
