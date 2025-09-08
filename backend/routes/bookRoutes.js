@@ -13,8 +13,8 @@ const { protectedRoute, admin } = require ("../middleware/auth.Middleware.js");
 
 const router = express.Router();
 
-router.get("/", protectedRoute, getAvailableBooks) //Only  logged-in users
-router.get("/all", protectedRoute,admin, getBooks); // Only Admin
+// router.get("/all", protectedRoute, getAvailableBooks) //Only  logged-in users
+router.get("/", protectedRoute, getBooks); // Only Admin
 router.post("/", protectedRoute, admin, addBook); // Admin only
 router.put("/borrow/:id", protectedRoute, borrowBook);
 router.put("/return/:id", protectedRoute, returnBook);

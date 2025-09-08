@@ -6,24 +6,34 @@ import { useMutation } from "@tanstack/react-query";
 
 const Login = () => {
   const setToken = useAppStore((s) => s.setToken);
+  // const {user ,setUser} = useAppStore();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const navigate = useNavigate();
 
-  const loginMutation = useMutation({
-    mutationFn: async () => {
-      const res = await axios.post("/auth/login", { email, password });
-      return res.data;
-    },
-    onSuccess: (data) => {
-      setToken(data.token);
-      navigate("/dashboard");
-    },
-    onError: (err) => {
-      setError(err.response?.data?.message || "Login Failed");
-    },
-  });
+const loginMutation = useMutation({
+  mutationFn: async () => {
+    const res = await axios.post("/auth/login", { email, password });
+    return res.data; // expected { token, user }
+  },
+  onSuccess: (data) => {
+    // Save token and user to Zustand store
+    // setToken(data.token, data.user); // pass both token & user
+    // setUser(data.user.name)
+    // console.log(user)
+   
+    setToken(data.token, data.user.name); // assuming your backend returns user.name
+
+    
+
+    navigate("/dashboard");
+  },
+  onError: (err) => {
+    setError(err.response?.data?.message || "Login Failed");
+  },
+});
+
 
   const handleSubmit = (e) => {
     e.preventDefault();

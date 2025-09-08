@@ -41,7 +41,7 @@ const login = asyncHandler(async (req, res, next) => {
     { expiresIn: "1d" }
   );
 
-  res.json({ token });
+  res.json({ message : "login successful",user ,token :token });
 });
 
 

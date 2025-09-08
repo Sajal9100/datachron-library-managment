@@ -1,117 +1,197 @@
+
 // const { PrismaClient } = require("../generated/prisma");
 // const { ErrorApi } = require("../utils/errorApi");
 // const { asyncHandler } = require("../utils/asyncHandler");
 
 // const prisma = new PrismaClient();
 
+// /**
+//  * Add a new book
+//  */
 // const addBook = asyncHandler(async (req, res) => {
 //   const { title, author, isbn } = req.body;
-//   const book = await prisma.book.create({ data: { title, author, isbn } });
-//   res.status(201).json({ message: "Book added", book });
+//   if (!title || !author || !isbn) {
+//     throw new ErrorApi("All fields are required", 400);
+//   }
+
+//   const book = await prisma.book.create({
+//     data: { title, author, isbn, isAvailable: true },
+//   });
+
+//   res.status(201).json({ message: "Book added", data: book });
 // });
+
 
 // const getBooks = asyncHandler(async (req, res) => {
-//   const books = await prisma.book.findMany({ where: { isAvailable: true } });
-//   res.status(200).json({ message : "Books Fetched" ,data : books });
+//   const books = await prisma.book.findMany({
+//     include: {
+//       borrows: {
+//         where: { returnedAt: null }, // Only show active borrow
+//         select: { userId: true },
+//       },
+//     },
+//   });
+
+//   // Transform to add borrowedBy field
+//   const formattedBooks = books.map(book => ({
+//     ...book,
+//     borrowedBy: book.borrows.length > 0 ? book.borrows[0].userId : null,
+//   }));
+
+//   res.status(200).json({ message: "Books fetched", data: formattedBooks });
 // });
 
+
+
+
+
+// /**
+//  * Get all books (available or borrowed)
+//  */
+// // const getBooks = asyncHandler(async (req, res) => {
+// //   const books = await prisma.book.findMany();
+// //   res.status(200).json({ message: "Books fetched", data: books });
+// // });
+
+// /**
+//  * Get only available books (not borrowed)
+//  */
+// const getAvailableBooks = asyncHandler(async (req, res) => {
+//   const books = await prisma.book.findMany({
+//     where: { isAvailable: true }, // Only fetch available books
+//     orderBy: { title: "asc" }, // Optional: Sort alphabetically
+//   });
+
+//   if (!books || books.length === 0) {
+//     return res.status(200).json({ message: "No available books found", data: [] });
+//   }
+
+//   res.status(200).json({
+//     message: "Available books fetched successfully",
+//     data: books,
+//   });
+// });
+
+// /**
+//  * Borrow a book
+//  */
 // const borrowBook = asyncHandler(async (req, res) => {
 //   const { id } = req.params;
 //   const book = await prisma.book.findUnique({ where: { id: Number(id) } });
-//   if (!book) throw new ErrorApi("Book not found", 404);
-//   if (!book.isAvailable) throw new ErrorApi("Book not available", 400);
 
-//   const updated = await prisma.book.update({
+//   if (!book) throw new ErrorApi("Book not found", 404);
+//   console.log(book.isAvailable)
+//   if (!book.isAvailable) throw new ErrorApi("Book is currently borrowed", 400);
+
+//   // Mark book as unavailable
+//   const updatedBook = await prisma.book.update({
 //     where: { id: Number(id) },
 //     data: { isAvailable: false },
 //   });
 
-//   res.json({ message: "Book borrowed", book: updated });
+//   // Record borrowing in Borrow table
+//   await prisma.borrow.create({
+//     data: {
+//       userId: req.user.id,
+//       bookId: book.id,
+//       borrowedAt: new Date(),
+//     },
+//   });
+
+//   res.status(200).json({ message: "Book borrowed", data: updatedBook });
 // });
 
+// /**
+//  * Return a book
+//  */
 // const returnBook = asyncHandler(async (req, res) => {
 //   const { id } = req.params;
 //   const book = await prisma.book.findUnique({ where: { id: Number(id) } });
+
 //   if (!book) throw new ErrorApi("Book not found", 404);
 
-//   const updated = await prisma.book.update({
+//   // Mark book as available
+//   const updatedBook = await prisma.book.update({
 //     where: { id: Number(id) },
 //     data: { isAvailable: true },
 //   });
 
-//   res.json({ message: "Book returned", book: updated });
+//   // Update the borrow record for this user & book
+//   await prisma.borrow.updateMany({
+//     where: { bookId: book.id, userId: req.user.id, returnedAt: null },
+//     data: { returnedAt: new Date() },
+//   });
+
+//   res.status(200).json({ message: "Book returned", data: updatedBook });
 // });
 
-
-// // Search books by title or author with optional pagination
-//  const searchBooks = async (req, res) => {
-//   const { query, page = 1, limit = 10 } = req.query;
+// /**
+//  * Search books by title or author (with optional pagination)
+//  */
+// const searchBooks = asyncHandler(async (req, res) => {
+//   const { query = "", page = 1, limit = 10 } = req.query;
 //   const skip = (page - 1) * limit;
 
+//   const whereFilter = query
+//     ? {
+//         OR: [
+//           { title: { contains: query, mode: "insensitive" } },
+//           { author: { contains: query, mode: "insensitive" } },
+//         ],
+//       }
+//     : {};
+
 //   const books = await prisma.book.findMany({
-//     where: {
-//       isAvailable: true,
-//       OR: [
-//         { title: { contains: query, mode: "insensitive" } },
-//         { author: { contains: query, mode: "insensitive" } },
-//       ],
-//     },
+//     where: whereFilter,
 //     skip: parseInt(skip),
 //     take: parseInt(limit),
 //   });
 
-//   const total = await prisma.book.count({
-//     where: {
-//       isAvailable: true,
-//       OR: [
-//         { title: { contains: query, mode: "insensitive" } },
-//         { author: { contains: query, mode: "insensitive" } },
-//       ],
-//     },
-//   });
+//   const total = await prisma.book.count({ where: whereFilter });
 
-//   res.json({
+//   res.status(200).json({
 //     page: parseInt(page),
 //     limit: parseInt(limit),
 //     total,
-//     books,
+//     data: books,
 //   });
-// };
+// });
 
-
-// // Get borrowing history for logged-in user
-// //check not wokring i guess
-//  const getUserHistory = async (req, res) => {
-//   const userId = req.user.id;
+// /**
+//  * Get borrowing history for the logged-in user
+//  */
+// const getUserHistory = asyncHandler(async (req, res) => {
+//   if (!req.user || !req.user.id) throw new ErrorApi("Unauthorized", 401);
 
 //   const history = await prisma.borrow.findMany({
-//     where: { userId },
-//     include: {
-//       book: true, // include book details
-//     },
+//     where: { userId: req.user.id },
+//     include: { book: true },
 //     orderBy: { borrowedAt: "desc" },
 //   });
 
-//   const formattedHistory = history.map(record => ({
-//     bookTitle: record.book.title,
-//     bookAuthor: record.book.author,
+//   const formattedHistory = history.map((record) => ({
+//     bookTitle: record.book?.title || "Unknown",
+//     bookAuthor: record.book?.author || "Unknown",
 //     borrowedAt: record.borrowedAt,
 //     returnedAt: record.returnedAt,
-//     isReturned: record.returnedAt ? true : false,
+//     isReturned: !!record.returnedAt,
 //   }));
 
-//   res.json(formattedHistory);
+//   res.status(200).json({ data: formattedHistory });
+// });
+
+
+
+// module.exports = {
+//   addBook,
+//   getBooks,
+//   borrowBook,
+//   returnBook,
+//   searchBooks,
+//   getUserHistory,
+//   getAvailableBooks,
+
 // };
-
-
-
-// module.exports = { addBook, getBooks, borrowBook, returnBook ,searchBooks, getUserHistory };
-
-
-
-
-
-
 
 
 
@@ -138,11 +218,33 @@ const addBook = asyncHandler(async (req, res) => {
 });
 
 /**
- * Get all books (available or borrowed)
+ * Get all books with borrowedBy info
  */
 const getBooks = asyncHandler(async (req, res) => {
-  const books = await prisma.book.findMany();
-  res.status(200).json({ message: "Books fetched", data: books });
+  const books = await prisma.book.findMany({
+    include: {
+      borrowed: {
+        where: { returnedAt: null }, // only active borrow
+        select: { userId: true },
+      },
+    },
+    orderBy: { title: "asc" },
+  });
+
+  const formattedBooks = books.map((book) => ({
+    id: book.id,
+    title: book.title,
+    author: book.author,
+    isbn: book.isbn,
+    isAvailable: book.isAvailable,
+    createdAt: book.createdAt,
+    borrowedBy: book.borrowed?.[0]?.userId || null, // safe access
+  }));
+
+  res.status(200).json({
+    message: "Books fetched successfully",
+    data: formattedBooks,
+  });
 });
 
 /**
@@ -153,16 +255,14 @@ const borrowBook = asyncHandler(async (req, res) => {
   const book = await prisma.book.findUnique({ where: { id: Number(id) } });
 
   if (!book) throw new ErrorApi("Book not found", 404);
-  console.log(book.isAvailable)
   if (!book.isAvailable) throw new ErrorApi("Book is currently borrowed", 400);
 
-  // Mark book as unavailable
+  // Mark as unavailable
   const updatedBook = await prisma.book.update({
     where: { id: Number(id) },
     data: { isAvailable: false },
   });
 
-  // Record borrowing in Borrow table
   await prisma.borrow.create({
     data: {
       userId: req.user.id,
@@ -183,13 +283,11 @@ const returnBook = asyncHandler(async (req, res) => {
 
   if (!book) throw new ErrorApi("Book not found", 404);
 
-  // Mark book as available
   const updatedBook = await prisma.book.update({
     where: { id: Number(id) },
     data: { isAvailable: true },
   });
 
-  // Update the borrow record for this user & book
   await prisma.borrow.updateMany({
     where: { bookId: book.id, userId: req.user.id, returnedAt: null },
     data: { returnedAt: new Date() },
@@ -199,7 +297,7 @@ const returnBook = asyncHandler(async (req, res) => {
 });
 
 /**
- * Search books by title or author (with optional pagination)
+ * Search books
  */
 const searchBooks = asyncHandler(async (req, res) => {
   const { query = "", page = 1, limit = 10 } = req.query;
@@ -218,6 +316,7 @@ const searchBooks = asyncHandler(async (req, res) => {
     where: whereFilter,
     skip: parseInt(skip),
     take: parseInt(limit),
+    orderBy: { title: "asc" },
   });
 
   const total = await prisma.book.count({ where: whereFilter });
@@ -231,10 +330,10 @@ const searchBooks = asyncHandler(async (req, res) => {
 });
 
 /**
- * Get borrowing history for the logged-in user
+ * Get borrowing history for logged-in user
  */
 const getUserHistory = asyncHandler(async (req, res) => {
-  if (!req.user || !req.user.id) throw new ErrorApi("Unauthorized", 401);
+  if (!req.user?.id) throw new ErrorApi("Unauthorized", 401);
 
   const history = await prisma.borrow.findMany({
     where: { userId: req.user.id },
@@ -243,6 +342,7 @@ const getUserHistory = asyncHandler(async (req, res) => {
   });
 
   const formattedHistory = history.map((record) => ({
+    bookId: record.book?.id,
     bookTitle: record.book?.title || "Unknown",
     bookAuthor: record.book?.author || "Unknown",
     borrowedAt: record.borrowedAt,
@@ -253,26 +353,6 @@ const getUserHistory = asyncHandler(async (req, res) => {
   res.status(200).json({ data: formattedHistory });
 });
 
-/**
- * Get only available books (not borrowed)
- */
-const getAvailableBooks = asyncHandler(async (req, res) => {
-  const books = await prisma.book.findMany({
-    where: { isAvailable: true }, // Only fetch available books
-    orderBy: { title: "asc" }, // Optional: Sort alphabetically
-  });
-
-  if (!books || books.length === 0) {
-    return res.status(200).json({ message: "No available books found", data: [] });
-  }
-
-  res.status(200).json({
-    message: "Available books fetched successfully",
-    data: books,
-  });
-});
-
-
 module.exports = {
   addBook,
   getBooks,
@@ -280,6 +360,4 @@ module.exports = {
   returnBook,
   searchBooks,
   getUserHistory,
-  getAvailableBooks,
-
 };
