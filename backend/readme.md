@@ -1,25 +1,19 @@
-File Structure
+
 
 backend/
-├─ node_modules/
-├─ prisma/
-│  └─ schema.prisma
-├─ src/
-│  ├─ controllers/
-│  │   ├─ authController.js
-│  │   └─ bookController.js
-│  ├─ middleware/
-│  │   ├─ authMiddleware.js
-│  │   └─ errorMiddleware.js
-│  ├─ routes/
-│  │   ├─ authRoutes.js
-│  │   └─ bookRoutes.js
-│  ├─ utils/
-│  │   └─ ErrorApi.js
-│  └─ app.js
-├─ .env
-├─ package.json
-└─ server.js
+ ├─ prisma/        # Schema & migrations
+ ├─ routes/        # API routes
+ ├─ controllers/   # Business logic
+ ├─ middlewares/   # Auth & error handlers
+ ├─ index.js       # Entry point
+
+frontend/
+ ├─ src/
+ │   ├─ components/ # UI components
+ │   ├─ hooks/      # TanStack Query hooks
+ │   ├─ store/      # Zustand store
+ │   ├─ pages/      # App pages
+ │   └─ App.jsx
 
 
 Schema 
@@ -51,6 +45,16 @@ model Book {
 }
 
 --------------------------------------------------------------------------------------------------------------------------------
+Why This Approach?
+
+Scalable: PostgreSQL + Prisma for reliable data modeling.
+
+Fast development: TanStack Query removes manual data fetching logic.
+
+Simple state management: Zustand is lightweight for UI state.
+
+Clean structure: Backend and frontend separated for clarity.
+
 
 
 1. User Management
