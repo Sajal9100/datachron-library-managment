@@ -1,0 +1,150 @@
+openapi: 3.0.3
+info:
+  title: Library Management System API
+  version: 1.0.0
+  description: API documentation for Library Management System.
+
+servers:
+  - url: http://localhost:5000/api
+    description: Local development server
+
+tags:
+  - name: Auth
+    description: User authentication
+  - name: Books
+    description: Manage books
+  - name: Borrow
+    description: Borrow & return books
+
+paths:
+  /auth/register:
+    post:
+      tags: [Auth]
+      summary: Register a new user
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name: { type: string, example: John Doe }
+                email: { type: string, example: john@example.com }
+                password: { type: string, example: Password123 }
+      responses:
+        201:
+          description: User registered successfully
+        400:
+          description: Validation error
+
+  /auth/login:
+    post:
+      tags: [Auth]
+      summary: User login
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                email: { type: string, example: john@example.com }
+                password: { type: string, example: Password123 }
+      responses:
+        200:
+          description: Login successful (returns JWT token)
+        401:
+          description: Invalid credentials
+
+  /books:
+    get:
+      tags: [Books]
+      summary: Get all books
+      responses:
+        200:
+          description: List of books
+    post:
+      tags: [Books]
+      summary: Add a new book
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                title: { type: string, example: Harry Potter }
+                author: { type: string, example: J.K. Rowling }
+                isbn: { type: string, example: 9781234567890 }
+      responses:
+        201:
+          description: Book created
+
+  /books/{id}:
+    put:
+      tags: [Books]
+      summary: Update a book
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: string }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                title: { type: string }
+                author: { type: string }
+                isbn: { type: string }
+      responses:
+        200:
+          description: Book updated
+    delete:
+      tags: [Books]
+      summary: Delete a book
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: string }
+      responses:
+        200:
+          description: Book deleted
+
+  /books/borrow/{id}:
+    post:
+      tags: [Borrow]
+      summary: Borrow a book
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: string }
+      responses:
+        200:
+          description: Book borrowed
+
+  /books/return/{id}:
+    put:
+      tags: [Borrow]
+      summary: Return a borrowed book
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: string }
+      responses:
+        200:
+          description: Book returned
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
