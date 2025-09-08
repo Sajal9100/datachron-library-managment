@@ -2,6 +2,8 @@ const express = require("express");
 const cors = require("cors");
 const helmet = require("helmet");
 const morgan = require("morgan");
+const swaggerUi = require("swagger-ui-express");
+const YAML = require("yamljs");
 const { PrismaClient } = require("./generated/prisma");
 const authRoutes = require("./routes/authRoutes");
 const bookRoutes = require("./routes/bookRoutes");
@@ -19,6 +21,11 @@ app.use(cors({
   methods: ["GET", "POST", "PUT", "DELETE"],
   credentials: true
 }));
+// Load your Swagger file
+const swaggerDocument = YAML.load("./swagger.yaml");
+
+// Serve Swagger UI
+app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerDocument));
 app.use(express.json()); // Parse JSON bodies
 app.use(morgan("combined")); // Logging
 
