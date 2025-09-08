@@ -5,8 +5,8 @@ import useAuthStore from "../../store/useAuthStore";
 
 const Dashboard = () => {
   const token = useAuthStore((state) => state.token);
-  const queryClient = useQueryClient(); //from main.jsx 
-  const [activeTab, setActiveTab] = useState("books"); // books | history
+  const queryClient = useQueryClient(); //from main 
+  const [activeTab, setActiveTab] = useState("books"); // books | history | Admin bhi
   const [searchQuery, setSearchQuery] = useState("");
   const [page, setPage] = useState(1);
 
@@ -200,7 +200,7 @@ const Dashboard = () => {
                         <td className="px-4 py-2">{record.bookTitle}</td>
                         <td className="px-4 py-2">{record.bookAuthor}</td>
                         <td className="px-4 py-2">{new Date(record.borrowedAt).toLocaleString()}</td>
-                        <td className="px-4 py-2">{record.returnedAt ? new Date(record.returnedAt).toLocaleString() : "-"}</td>
+                        <td className="px-4 py-2">{record.returnedAt ? new Date(record.returnedAt).toLocaleString() : "Not Returned Yet"}</td>
                         <td className="px-4 py-2">{record.isReturned ? "Returned" : "Borrowed"}</td>
                       </tr>
                     ))}

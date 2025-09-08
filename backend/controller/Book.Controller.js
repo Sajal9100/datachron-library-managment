@@ -153,6 +153,7 @@ const borrowBook = asyncHandler(async (req, res) => {
   const book = await prisma.book.findUnique({ where: { id: Number(id) } });
 
   if (!book) throw new ErrorApi("Book not found", 404);
+  console.log(book.isAvailable)
   if (!book.isAvailable) throw new ErrorApi("Book is currently borrowed", 400);
 
   // Mark book as unavailable
@@ -252,6 +253,26 @@ const getUserHistory = asyncHandler(async (req, res) => {
   res.status(200).json({ data: formattedHistory });
 });
 
+/**
+ * Get only available books (not borrowed)
+ */
+const getAvailableBooks = asyncHandler(async (req, res) => {
+  const books = await prisma.book.findMany({
+    where: { isAvailable: true }, // Only fetch available books
+    orderBy: { title: "asc" }, // Optional: Sort alphabetically
+  });
+
+  if (!books || books.length === 0) {
+    return res.status(200).json({ message: "No available books found", data: [] });
+  }
+
+  res.status(200).json({
+    message: "Available books fetched successfully",
+    data: books,
+  });
+});
+
+
 module.exports = {
   addBook,
   getBooks,
@@ -259,4 +280,6 @@ module.exports = {
   returnBook,
   searchBooks,
   getUserHistory,
+  getAvailableBooks,
+
 };
