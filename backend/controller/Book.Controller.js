@@ -210,6 +210,11 @@ const addBook = asyncHandler(async (req, res) => {
     throw new ErrorApi("All fields are required", 400);
   }
 
+   const already = await prisma.book.findUnique( {where : {isbn}});
+  if (already) {
+    throw new ErrorApi("please provide a Unioque ISBN value",404)
+  }
+  
   const book = await prisma.book.create({
     data: { title, author, isbn, isAvailable: true },
   });
