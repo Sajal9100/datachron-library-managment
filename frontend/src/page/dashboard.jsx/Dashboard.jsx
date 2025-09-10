@@ -105,6 +105,13 @@ const Dashboard = () => {
             (loadingBooks ? (
               <p>Loading books...</p>
             ) : (
+              <>
+                   <div className="flex justify-end mb-3">
+                  <button className="px-4 py-2 bg-indigo-600 text-white rounded hover:bg-indigo-700">
+                    Add New Book
+                  </button>
+                </div>
+                
               <table className="min-w-full rounded-lg">
                 <thead>
                   <tr>
@@ -147,6 +154,7 @@ const Dashboard = () => {
                   ))}
                 </tbody>
               </table>
+                </>
             ))}
 
           {/* History
@@ -280,6 +288,7 @@ const Dashboard = () => {
                     ))}
                   </tbody>
                 </table>
+             
               )}
             </>
           )}
