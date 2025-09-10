@@ -1,6 +1,9 @@
 import { useState } from "react";
 import { useMutation } from "@tanstack/react-query";
 import axiosInstance from "../api/axios";
+// 
+import { useNavigate } from "react-router-dom";
+
 
 const Register = () => {
   const [formData, setFormData] = useState({
@@ -9,6 +12,8 @@ const Register = () => {
     password: "",
     role: "Member", // Default role
   });
+  //added
+ const Navigate = useNavigate();
 
   const { mutate, isLoading, isError, error, isSuccess } = useMutation({
     mutationFn: async () => {
@@ -17,6 +22,7 @@ const Register = () => {
     },
     onSuccess: () => {
       alert("Registration successful! Please login.");
+      Navigate("/login")
     },
     onError: () => {
       alert("Failed to register. Try again.");
