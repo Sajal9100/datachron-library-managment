@@ -17,11 +17,15 @@ LibraryX is a modern **Library Management System** designed to provide a smooth 
 ## 🛠️ Tech Stack
 
 ### Frontend
+Live - https://datachron-library-managment.vercel.app
+
 - [React](https://react.dev/) – Frontend Framework  
 - [TanStack Query](https://tanstack.com/query/latest) – Server State Management  
 - [Axios](https://axios-http.com/) – HTTP Client  
 
 ### Backend
+Live - [https://datachron-library-managment.vercel.app](https://datachron-library-managment-2.onrender.com)
+
 - [Express.js](https://expressjs.com/) – Backend Framework  
 - [Node.js](https://nodejs.org/) – Runtime Environment  
 - [Prisma](https://www.prisma.io/) – ORM for Database  
