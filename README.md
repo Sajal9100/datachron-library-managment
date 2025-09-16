@@ -10,7 +10,7 @@ LibraryX is a modern **Library Management System** designed to provide a smooth 
 - 📱 Responsive design for desktop and mobile  
 - 🔗 Integration between frontend and backend  
 - ⚡ Real-time updates for book availability  
-- 🖥️ Intuitive dashboard for managing library operations   
+- 🖥️ Intuitive dashboard for managing library operations    
 
 ---
 
